@@ -64,7 +64,8 @@ reloads all calendars that use it.
    Reuse a grid with **Export time grid** (shows it as text, one `Name | HH:MM-HH:MM` line
    per period) and **Import time grid** in another timetable (pick a timetable to copy from,
    or paste the text). Importing replaces the grid and drops lessons whose periods vanish.
-3. **Subjects** – subject → teacher mapping.
+3. **Subjects** – subject → teacher mapping. *Edit subject & teacher* changes the teacher or
+   renames a subject (lessons follow the new name).
 4. **Lessons** – subject + weekday + period, optional location and description, and
    **weeks**:
    * empty / `all` – every week
@@ -73,6 +74,8 @@ reloads all calendars that use it.
 
    A lesson can span several periods (double lesson): choose the first period and the
    **last period**. It shows as **one** event from the start of the first to the end of the last.
+   *Edit lesson* changes any field of an existing lesson, e.g. moves a misentered lesson from
+   Monday to Tuesday.
 5. Every change is stored immediately; **Done** just closes the dialog.
 
 Removing a period or subject also removes the lessons that use it.

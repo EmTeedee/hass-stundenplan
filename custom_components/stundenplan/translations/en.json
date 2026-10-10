@@ -51,7 +51,9 @@
           "remove_lesson": "Remove lessons",
           "save": "Done",
           "export_periods": "Export time grid (copy as text)",
-          "import_periods": "Import time grid (from timetable or text)"
+          "import_periods": "Import time grid (from timetable or text)",
+          "edit_subject": "Edit subject & teacher",
+          "edit_lesson": "Edit lesson"
         },
         "data": {
           "timetables": "Timetables"
@@ -134,6 +136,41 @@
           "periods": "Periods",
           "source": "Copy from timetable"
         }
+      },
+      "edit_subject": {
+        "title": "Edit subject",
+        "data": {
+          "item": "Select"
+        }
+      },
+      "edit_lesson": {
+        "title": "Edit lesson",
+        "data": {
+          "item": "Select"
+        }
+      },
+      "edit_subject_form": {
+        "title": "Edit subject",
+        "data": {
+          "name": "Subject",
+          "teacher": "Teacher"
+        }
+      },
+      "edit_lesson_form": {
+        "title": "Edit lesson",
+        "description": "Place a subject in a period on a weekday.",
+        "data": {
+          "subject": "Subject",
+          "weekday": "Weekday",
+          "period": "Period",
+          "location": "Location",
+          "description": "Description",
+          "weeks": "Weeks",
+          "end_period": "Last period (for double lessons)"
+        },
+        "data_description": {
+          "weeks": "Empty/'all', 'odd' or 'even' (ISO week number), or week numbers/ranges like '1-10, 15, 40-52'."
+        }
       }
     },
     "error": {
@@ -146,7 +183,8 @@
       "nothing_to_remove": "Nothing to remove (submit to go back).",
       "invalid_periods": "Invalid time grid (expected lines like '1st lesson | 08:00-08:45'; unique names, end after start).",
       "no_import_source": "Choose a timetable or paste text.",
-      "end_period_before_start": "The last period must come after the first period."
+      "end_period_before_start": "The last period must come after the first period.",
+      "nothing_to_edit": "Nothing to edit (submit to go back)."
     }
   },
   "selector": {

@@ -51,7 +51,9 @@
           "remove_lesson": "Unterrichtsstunden entfernen",
           "save": "Fertig",
           "export_periods": "Zeitraster exportieren (als Text kopieren)",
-          "import_periods": "Zeitraster importieren (aus Stundenplan oder Text)"
+          "import_periods": "Zeitraster importieren (aus Stundenplan oder Text)",
+          "edit_subject": "Fach & Lehrer bearbeiten",
+          "edit_lesson": "Unterrichtsstunde bearbeiten"
         },
         "data": {
           "timetables": "Stundenpläne"
@@ -134,6 +136,41 @@
           "periods": "Stunden",
           "source": "Aus Stundenplan kopieren"
         }
+      },
+      "edit_subject": {
+        "title": "Fach bearbeiten",
+        "data": {
+          "item": "Auswahl"
+        }
+      },
+      "edit_lesson": {
+        "title": "Unterrichtsstunde bearbeiten",
+        "data": {
+          "item": "Auswahl"
+        }
+      },
+      "edit_subject_form": {
+        "title": "Fach bearbeiten",
+        "data": {
+          "name": "Fach",
+          "teacher": "Lehrer"
+        }
+      },
+      "edit_lesson_form": {
+        "title": "Unterrichtsstunde bearbeiten",
+        "description": "Platziere ein Fach in einer Stunde an einem Wochentag.",
+        "data": {
+          "subject": "Fach",
+          "weekday": "Wochentag",
+          "period": "Stunde",
+          "location": "Raum/Ort",
+          "description": "Beschreibung",
+          "weeks": "Wochen",
+          "end_period": "Letzte Stunde (für Doppelstunden)"
+        },
+        "data_description": {
+          "weeks": "Leer/'all', 'odd' (ungerade) oder 'even' (gerade) nach ISO-Kalenderwoche, oder Wochennummern/Bereiche wie '1-10, 15, 40-52'."
+        }
       }
     },
     "error": {
@@ -146,7 +183,8 @@
       "nothing_to_remove": "Nichts zu entfernen (Absenden = zurück).",
       "invalid_periods": "Ungültiges Zeitraster (erwartet Zeilen wie '1. Stunde | 08:00-08:45'; eindeutige Namen, Ende nach Beginn).",
       "no_import_source": "Wähle einen Stundenplan oder füge Text ein.",
-      "end_period_before_start": "Die letzte Stunde muss nach der ersten Stunde liegen."
+      "end_period_before_start": "Die letzte Stunde muss nach der ersten Stunde liegen.",
+      "nothing_to_edit": "Nichts zu bearbeiten (Absenden = zurück)."
     }
   },
   "selector": {
