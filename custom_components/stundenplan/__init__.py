@@ -2,7 +2,7 @@
 
 Two kinds of config entries exist:
 * ``timetable``: holds the timetable data, creates no entities itself.
-* ``calendar``: a named calendar entity  that shows
+* ``calendar``: a named calendar entity (plus today/tomorrow sensors) that shows
   the lessons of one or more timetables. A timetable can be used by any number of
   calendars (n:m).
 """
