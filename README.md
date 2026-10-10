@@ -74,3 +74,8 @@ Removing a period or subject also removes the lessons that use it.
 
 `python -m pytest tests` (covers the pure logic in `schedule.py`).
 The HA parts (config flow, calendar entity) have not been run against a live Home Assistant yet.
+
+## License & contributing
+
+MIT licensed, see [LICENSE](LICENSE). Pull requests must confirm the MIT contributor
+agreement, see [CONTRIBUTING.md](CONTRIBUTING.md).

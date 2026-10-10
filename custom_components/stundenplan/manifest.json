@@ -1,7 +1,7 @@
 {
   "domain": "stundenplan",
   "name": "Stundenplan",
-  "codeowners": [],
+  "codeowners": ["@EmTeedee"],
   "config_flow": true,
   "dependencies": ["calendar"],
   "documentation": "https://github.com/EmTeedee/hass-stundenplan",
