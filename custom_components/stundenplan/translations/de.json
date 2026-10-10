@@ -1,0 +1,144 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hinzufügen",
+        "menu_options": {
+          "timetable": "Stundenplan (Stunden, Zeitraster, Fächer)",
+          "calendar": "Kalender (zeigt einen oder mehrere Stundenpläne)"
+        }
+      },
+      "timetable": {
+        "title": "Stundenplan (Stunden, Zeitraster, Fächer)",
+        "data": {
+          "name": "Name des Stundenplans (z. B. Anna 3b)",
+          "start_date": "Aktiv ab",
+          "end_date": "Aktiv bis",
+          "holiday_calendar": "Ferienkalender (optional)"
+        },
+        "data_description": {
+          "holiday_calendar": "An jedem Tag, an dem dieser Kalender einen Termin hat (z. B. Schulferien), werden keine Stunden angezeigt."
+        }
+      },
+      "calendar": {
+        "title": "Kalender (zeigt einen oder mehrere Stundenpläne)",
+        "description": "Ein Kalender kann mehrere Stundenpläne kombinieren, und ein Stundenplan kann in mehreren Kalendern verwendet werden.",
+        "data": {
+          "name": "Kalendername",
+          "timetables": "Stundenpläne"
+        }
+      }
+    },
+    "error": {
+      "end_before_start": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+      "no_timetable_selected": "Mindestens einen Stundenplan auswählen."
+    },
+    "abort": {
+      "no_timetables": "Lege zuerst einen Stundenplan an."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bearbeiten",
+        "menu_options": {
+          "settings": "Zeitraum & Ferienkalender",
+          "add_period": "Stunde zum Zeitraster hinzufügen",
+          "remove_period": "Stunden entfernen",
+          "add_subject": "Fach & Lehrer hinzufügen",
+          "remove_subject": "Fächer entfernen",
+          "add_lesson": "Unterrichtsstunde hinzufügen",
+          "remove_lesson": "Unterrichtsstunden entfernen",
+          "save": "Speichern & schließen"
+        },
+        "data": {
+          "timetables": "Stundenpläne"
+        }
+      },
+      "settings": {
+        "title": "Zeitraum & Ferienkalender",
+        "data": {
+          "start_date": "Aktiv ab",
+          "end_date": "Aktiv bis",
+          "holiday_calendar": "Ferienkalender (optional)"
+        },
+        "data_description": {
+          "holiday_calendar": "An jedem Tag, an dem dieser Kalender einen Termin hat (z. B. Schulferien), werden keine Stunden angezeigt."
+        }
+      },
+      "add_period": {
+        "title": "Stunde zum Zeitraster hinzufügen",
+        "description": "Benenne den Slot, z. B. '1. Stunde'.",
+        "data": {
+          "name": "Name",
+          "start": "Beginn",
+          "end": "Ende"
+        }
+      },
+      "remove_period": {
+        "title": "Stunden entfernen",
+        "description": "Unterrichtsstunden mit einer entfernten Stunde werden ebenfalls entfernt.",
+        "data": {
+          "items": "Einträge"
+        }
+      },
+      "add_subject": {
+        "title": "Fach & Lehrer hinzufügen",
+        "data": {
+          "name": "Fach",
+          "teacher": "Lehrer"
+        }
+      },
+      "remove_subject": {
+        "title": "Fächer entfernen",
+        "description": "Unterrichtsstunden eines entfernten Fachs werden ebenfalls entfernt.",
+        "data": {
+          "items": "Einträge"
+        }
+      },
+      "add_lesson": {
+        "title": "Unterrichtsstunde hinzufügen",
+        "description": "Platziere ein Fach in einer Stunde an einem Wochentag.",
+        "data": {
+          "subject": "Fach",
+          "weekday": "Wochentag",
+          "period": "Stunde",
+          "location": "Raum/Ort",
+          "description": "Beschreibung",
+          "weeks": "Wochen"
+        },
+        "data_description": {
+          "weeks": "Leer/'all', 'odd' (ungerade) oder 'even' (gerade) nach ISO-Kalenderwoche, oder Wochennummern/Bereiche wie '1-10, 15, 40-52'."
+        }
+      },
+      "remove_lesson": {
+        "title": "Unterrichtsstunden entfernen",
+        "data": {
+          "items": "Einträge"
+        }
+      }
+    },
+    "error": {
+      "end_before_start": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+      "no_timetable_selected": "Mindestens einen Stundenplan auswählen.",
+      "duplicate_name": "Dieser Name existiert bereits.",
+      "end_before_start_time": "Das Ende muss nach dem Beginn liegen.",
+      "invalid_weeks": "Ungültige Wochenangabe.",
+      "need_subjects_and_periods": "Lege zuerst mindestens eine Stunde und ein Fach an (Absenden = zurück).",
+      "nothing_to_remove": "Nichts zu entfernen (Absenden = zurück)."
+    }
+  },
+  "selector": {
+    "weekday": {
+      "options": {
+        "0": "Montag",
+        "1": "Dienstag",
+        "2": "Mittwoch",
+        "3": "Donnerstag",
+        "4": "Freitag",
+        "5": "Samstag",
+        "6": "Sonntag"
+      }
+    }
+  }
+}

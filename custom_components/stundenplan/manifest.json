@@ -1,0 +1,13 @@
+{
+  "domain": "stundenplan",
+  "name": "Stundenplan",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["calendar"],
+  "documentation": "https://github.com/EmTeedee/hass-stundenplan",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/EmTeedee/hass-stundenplan/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

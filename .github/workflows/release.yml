@@ -1,0 +1,40 @@
+name: Release
+
+# Runs only when a version tag such as v0.1.0 is pushed (no release exists yet).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version in manifest.json from tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          python3 - "$version" <<'PY'
+          import json, sys
+          path = "custom_components/stundenplan/manifest.json"
+          data = json.load(open(path, encoding="utf-8"))
+          data["version"] = sys.argv[1]
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          PY
+
+      - name: Build zip for HACS
+        run: |
+          cd custom_components/stundenplan
+          zip -r ../../stundenplan.zip . -x "__pycache__/*" "*.pyc"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" stundenplan.zip \
+            --title "$GITHUB_REF_NAME" --generate-notes

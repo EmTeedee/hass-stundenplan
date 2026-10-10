@@ -1,0 +1,144 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add",
+        "menu_options": {
+          "timetable": "Timetable (lessons, time grid, subjects)",
+          "calendar": "Calendar (shows one or more timetables)"
+        }
+      },
+      "timetable": {
+        "title": "Timetable (lessons, time grid, subjects)",
+        "data": {
+          "name": "Timetable name (e.g. Anna 3b)",
+          "start_date": "Active from",
+          "end_date": "Active until",
+          "holiday_calendar": "Holiday calendar (optional)"
+        },
+        "data_description": {
+          "holiday_calendar": "Lessons are hidden on every day this calendar has an event (e.g. school holidays)."
+        }
+      },
+      "calendar": {
+        "title": "Calendar (shows one or more timetables)",
+        "description": "A calendar can combine several timetables, and a timetable can be used in several calendars.",
+        "data": {
+          "name": "Calendar name",
+          "timetables": "Timetables"
+        }
+      }
+    },
+    "error": {
+      "end_before_start": "End date must not be before start date.",
+      "no_timetable_selected": "Select at least one timetable."
+    },
+    "abort": {
+      "no_timetables": "Create a timetable first."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Edit",
+        "menu_options": {
+          "settings": "Date range & holiday calendar",
+          "add_period": "Add period to time grid",
+          "remove_period": "Remove periods",
+          "add_subject": "Add subject & teacher",
+          "remove_subject": "Remove subjects",
+          "add_lesson": "Add lesson",
+          "remove_lesson": "Remove lessons",
+          "save": "Save & close"
+        },
+        "data": {
+          "timetables": "Timetables"
+        }
+      },
+      "settings": {
+        "title": "Date range & holiday calendar",
+        "data": {
+          "start_date": "Active from",
+          "end_date": "Active until",
+          "holiday_calendar": "Holiday calendar (optional)"
+        },
+        "data_description": {
+          "holiday_calendar": "Lessons are hidden on every day this calendar has an event (e.g. school holidays)."
+        }
+      },
+      "add_period": {
+        "title": "Add period to time grid",
+        "description": "Name the slot, e.g. '1st lesson'.",
+        "data": {
+          "name": "Name",
+          "start": "Start",
+          "end": "End"
+        }
+      },
+      "remove_period": {
+        "title": "Remove periods",
+        "description": "Lessons using a removed period are removed too.",
+        "data": {
+          "items": "Items"
+        }
+      },
+      "add_subject": {
+        "title": "Add subject & teacher",
+        "data": {
+          "name": "Subject",
+          "teacher": "Teacher"
+        }
+      },
+      "remove_subject": {
+        "title": "Remove subjects",
+        "description": "Lessons of a removed subject are removed too.",
+        "data": {
+          "items": "Items"
+        }
+      },
+      "add_lesson": {
+        "title": "Add lesson",
+        "description": "Place a subject in a period on a weekday.",
+        "data": {
+          "subject": "Subject",
+          "weekday": "Weekday",
+          "period": "Period",
+          "location": "Location",
+          "description": "Description",
+          "weeks": "Weeks"
+        },
+        "data_description": {
+          "weeks": "Empty/'all', 'odd' or 'even' (ISO week number), or week numbers/ranges like '1-10, 15, 40-52'."
+        }
+      },
+      "remove_lesson": {
+        "title": "Remove lessons",
+        "data": {
+          "items": "Items"
+        }
+      }
+    },
+    "error": {
+      "end_before_start": "End date must not be before start date.",
+      "no_timetable_selected": "Select at least one timetable.",
+      "duplicate_name": "This name already exists.",
+      "end_before_start_time": "End must be after start.",
+      "invalid_weeks": "Invalid week specification.",
+      "need_subjects_and_periods": "Add at least one period and one subject first (submit to go back).",
+      "nothing_to_remove": "Nothing to remove (submit to go back)."
+    }
+  },
+  "selector": {
+    "weekday": {
+      "options": {
+        "0": "Monday",
+        "1": "Tuesday",
+        "2": "Wednesday",
+        "3": "Thursday",
+        "4": "Friday",
+        "5": "Saturday",
+        "6": "Sunday"
+      }
+    }
+  }
+}
