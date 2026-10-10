@@ -30,6 +30,7 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_DESCRIPTION,
     CONF_END_DATE,
+    CONF_END_PERIOD,
     CONF_ENTRY_TYPE,
     CONF_HOLIDAY_CALENDAR,
     CONF_LESSONS,
@@ -52,7 +53,7 @@ from .const import (
     TYPE_TIMETABLE,
     WEEKDAYS,
 )
-from .schedule import parse_time, parse_weeks
+from .schedule import format_periods, parse_periods, parse_time, parse_weeks
 
 WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -202,12 +203,20 @@ class TimetableOptionsFlow(OptionsFlow):
                 "settings",
                 "add_period",
                 "remove_period",
+                "export_periods",
+                "import_periods",
                 "add_subject",
                 "remove_subject",
                 "add_lesson",
                 "remove_lesson",
                 "save",
             ],
+        )
+
+    def _commit(self) -> None:
+        """Store the current state right away (closing the dialog loses nothing)."""
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, options=deepcopy(self.opts)
         )
 
     async def async_step_save(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -225,6 +234,7 @@ class TimetableOptionsFlow(OptionsFlow):
                 self.opts[CONF_START_DATE] = user_input[CONF_START_DATE]
                 self.opts[CONF_END_DATE] = user_input[CONF_END_DATE]
                 self.opts[CONF_HOLIDAY_CALENDAR] = user_input.get(CONF_HOLIDAY_CALENDAR)
+                self._commit()
                 return await self.async_step_init()
         holiday = self.opts.get(CONF_HOLIDAY_CALENDAR)
         return self.async_show_form(
@@ -259,6 +269,7 @@ class TimetableOptionsFlow(OptionsFlow):
                     {CONF_PERIOD_NAME: name, CONF_PERIOD_START: start, CONF_PERIOD_END: end}
                 )
                 self.opts[CONF_PERIODS].sort(key=lambda p: p[CONF_PERIOD_START])
+                self._commit()
                 return await self.async_step_init()
         return self.async_show_form(
             step_id="add_period",
@@ -282,8 +293,11 @@ class TimetableOptionsFlow(OptionsFlow):
             ]
             # lessons that used a removed period are dropped
             self.opts[CONF_LESSONS] = [
-                item for item in self.opts[CONF_LESSONS] if item[CONF_PERIOD] not in gone
+                item
+                for item in self.opts[CONF_LESSONS]
+                if item[CONF_PERIOD] not in gone and item.get(CONF_END_PERIOD) not in gone
             ]
+            self._commit()
             return await self.async_step_init()
         options = [
             SelectOptionDict(
@@ -307,6 +321,7 @@ class TimetableOptionsFlow(OptionsFlow):
                 self.opts[CONF_SUBJECTS].append(
                     {CONF_SUBJECT_NAME: name, CONF_TEACHER: user_input.get(CONF_TEACHER, "").strip()}
                 )
+                self._commit()
                 return await self.async_step_init()
         return self.async_show_form(
             step_id="add_subject",
@@ -330,6 +345,7 @@ class TimetableOptionsFlow(OptionsFlow):
             self.opts[CONF_LESSONS] = [
                 item for item in self.opts[CONF_LESSONS] if item[CONF_SUBJECT] not in gone
             ]
+            self._commit()
             return await self.async_step_init()
         options = [
             SelectOptionDict(
@@ -355,21 +371,27 @@ class TimetableOptionsFlow(OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             weeks = user_input.get(CONF_WEEKS, "").strip()
+            end_period = user_input.get(CONF_END_PERIOD) or ""
+            starts = {p[CONF_PERIOD_NAME]: p[CONF_PERIOD_START] for p in self.opts[CONF_PERIODS]}
             try:
                 parse_weeks(weeks)
             except ValueError:
                 errors[CONF_WEEKS] = "invalid_weeks"
-            else:
+            if end_period and starts[end_period] <= starts[user_input[CONF_PERIOD]]:
+                errors[CONF_END_PERIOD] = "end_period_before_start"
+            if not errors:
                 self.opts[CONF_LESSONS].append(
                     {
                         CONF_SUBJECT: user_input[CONF_SUBJECT],
                         CONF_WEEKDAY: int(user_input[CONF_WEEKDAY]),
                         CONF_PERIOD: user_input[CONF_PERIOD],
+                        CONF_END_PERIOD: end_period,
                         CONF_LOCATION: user_input.get(CONF_LOCATION, "").strip(),
                         CONF_DESCRIPTION: user_input.get(CONF_DESCRIPTION, "").strip(),
                         CONF_WEEKS: weeks or "all",
                     }
                 )
+                self._commit()
                 return await self.async_step_init()
         return self.async_show_form(
             step_id="add_lesson",
@@ -392,6 +414,12 @@ class TimetableOptionsFlow(OptionsFlow):
                             label=f"{p[CONF_PERIOD_NAME]} ({p[CONF_PERIOD_START]}-{p[CONF_PERIOD_END]})",
                         ) for p in self.opts[CONF_PERIODS]]
                     ),
+                    vol.Optional(CONF_END_PERIOD): _select(
+                        [SelectOptionDict(
+                            value=p[CONF_PERIOD_NAME],
+                            label=f"{p[CONF_PERIOD_NAME]} (-{p[CONF_PERIOD_END]})",
+                        ) for p in self.opts[CONF_PERIODS]]
+                    ),
                     vol.Optional(CONF_LOCATION): _text(),
                     vol.Optional(CONF_DESCRIPTION): _text(multiline=True),
                     vol.Optional(CONF_WEEKS, default="all"): _text(),
@@ -407,12 +435,15 @@ class TimetableOptionsFlow(OptionsFlow):
         if user_input is not None:
             gone = {int(i) for i in user_input["items"]}
             self.opts[CONF_LESSONS] = [x for i, x in enumerate(lessons) if i not in gone]
+            self._commit()
             return await self.async_step_init()
         options = [
             SelectOptionDict(
                 value=str(i),
                 label=(
-                    f"{WEEKDAY_LABELS[x[CONF_WEEKDAY]]} {x[CONF_PERIOD]}: {x[CONF_SUBJECT]}"
+                    f"{WEEKDAY_LABELS[x[CONF_WEEKDAY]]} {x[CONF_PERIOD]}"
+                    + (f"-{x[CONF_END_PERIOD]}" if x.get(CONF_END_PERIOD) else "")
+                    + f": {x[CONF_SUBJECT]}"
                     + (f" [{x[CONF_WEEKS]}]" if x.get(CONF_WEEKS, "all") != "all" else "")
                 ),
             )
@@ -422,6 +453,65 @@ class TimetableOptionsFlow(OptionsFlow):
         ]
         return self._show_remove("remove_lesson", options)
 
+    # -- export / import the time grid ------------------------------------
+    async def async_step_export_periods(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show the time grid as text to copy into other timetables."""
+        if user_input is not None:
+            return await self.async_step_init()
+        return self.async_show_form(
+            step_id="export_periods",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        "periods",
+                        description={"suggested_value": format_periods(self.opts[CONF_PERIODS])},
+                    ): _text(multiline=True)
+                }
+            ),
+        )
+
+    async def async_step_import_periods(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Replace the time grid with another timetable's grid or pasted text."""
+        errors: dict[str, str] = {}
+        others = _timetable_options(self.hass, exclude=self.config_entry.entry_id)
+        if user_input is not None:
+            periods = None
+            if source_id := user_input.get("source"):
+                source = self.hass.config_entries.async_get_entry(source_id)
+                periods = deepcopy(source.options.get(CONF_PERIODS, [])) if source else []
+                if not periods:
+                    errors["base"] = "invalid_periods"
+            elif text := user_input.get("periods", "").strip():
+                try:
+                    periods = parse_periods(text)
+                except ValueError:
+                    errors["periods"] = "invalid_periods"
+            else:
+                errors["base"] = "no_import_source"
+            if not errors and periods is not None:
+                names = {p[CONF_PERIOD_NAME] for p in periods}
+                self.opts[CONF_PERIODS] = periods
+                # lessons whose periods no longer exist cannot be shown
+                self.opts[CONF_LESSONS] = [
+                    x
+                    for x in self.opts[CONF_LESSONS]
+                    if x[CONF_PERIOD] in names
+                    and (not x.get(CONF_END_PERIOD) or x[CONF_END_PERIOD] in names)
+                ]
+                self._commit()
+                return await self.async_step_init()
+        schema: dict[Any, Any] = {}
+        if others:
+            schema[vol.Optional("source")] = _select(others)
+        schema[vol.Optional("periods")] = _text(multiline=True)
+        return self.async_show_form(
+            step_id="import_periods", data_schema=vol.Schema(schema), errors=errors
+        )
+
     def _show_remove(self, step_id: str, options: list[SelectOptionDict]) -> ConfigFlowResult:
         if not options:
             return self.async_show_form(
@@ -429,5 +519,5 @@ class TimetableOptionsFlow(OptionsFlow):
             )
         return self.async_show_form(
             step_id=step_id,
-            data_schema=vol.Schema({vol.Required("items"): _select(options, multiple=True)}),
+            data_schema=vol.Schema({vol.Required("items", default=[]): _select(options, multiple=True)}),
         )

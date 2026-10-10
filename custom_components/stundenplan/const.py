@@ -30,3 +30,4 @@ CONF_ENTRY_TYPE = "entry_type"
 TYPE_TIMETABLE = "timetable"
 TYPE_CALENDAR = "calendar"
 CONF_TIMETABLES = "timetables"  # list of timetable config entry ids
+CONF_END_PERIOD = "end_period"

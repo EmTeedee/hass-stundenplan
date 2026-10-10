@@ -49,7 +49,9 @@
           "remove_subject": "Fächer entfernen",
           "add_lesson": "Unterrichtsstunde hinzufügen",
           "remove_lesson": "Unterrichtsstunden entfernen",
-          "save": "Speichern & schließen"
+          "save": "Fertig",
+          "export_periods": "Zeitraster exportieren (als Text kopieren)",
+          "import_periods": "Zeitraster importieren (aus Stundenplan oder Text)"
         },
         "data": {
           "timetables": "Stundenpläne"
@@ -105,7 +107,8 @@
           "period": "Stunde",
           "location": "Raum/Ort",
           "description": "Beschreibung",
-          "weeks": "Wochen"
+          "weeks": "Wochen",
+          "end_period": "Letzte Stunde (für Doppelstunden)"
         },
         "data_description": {
           "weeks": "Leer/'all', 'odd' (ungerade) oder 'even' (gerade) nach ISO-Kalenderwoche, oder Wochennummern/Bereiche wie '1-10, 15, 40-52'."
@@ -116,6 +119,21 @@
         "data": {
           "items": "Einträge"
         }
+      },
+      "export_periods": {
+        "title": "Zeitraster exportieren",
+        "description": "Kopiere diesen Text und füge ihn bei einem anderen Stundenplan unter 'Zeitraster importieren' ein. Absenden ändert nichts.",
+        "data": {
+          "periods": "Stunden"
+        }
+      },
+      "import_periods": {
+        "title": "Zeitraster importieren",
+        "description": "Ersetzt das Zeitraster dieses Stundenplans. Unterrichtsstunden, deren Stunden nicht mehr existieren, werden entfernt. Wähle einen Stundenplan ODER füge Text mit einer Zeile 'Name | HH:MM-HH:MM' pro Stunde ein.",
+        "data": {
+          "periods": "Stunden",
+          "source": "Aus Stundenplan kopieren"
+        }
       }
     },
     "error": {
@@ -125,7 +143,10 @@
       "end_before_start_time": "Das Ende muss nach dem Beginn liegen.",
       "invalid_weeks": "Ungültige Wochenangabe.",
       "need_subjects_and_periods": "Lege zuerst mindestens eine Stunde und ein Fach an (Absenden = zurück).",
-      "nothing_to_remove": "Nichts zu entfernen (Absenden = zurück)."
+      "nothing_to_remove": "Nichts zu entfernen (Absenden = zurück).",
+      "invalid_periods": "Ungültiges Zeitraster (erwartet Zeilen wie '1. Stunde | 08:00-08:45'; eindeutige Namen, Ende nach Beginn).",
+      "no_import_source": "Wähle einen Stundenplan oder füge Text ein.",
+      "end_period_before_start": "Die letzte Stunde muss nach der ersten Stunde liegen."
     }
   },
   "selector": {
@@ -138,6 +159,16 @@
         "4": "Freitag",
         "5": "Samstag",
         "6": "Sonntag"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today": {
+        "name": "Heute"
+      },
+      "tomorrow": {
+        "name": "Morgen"
       }
     }
   }

@@ -61,15 +61,74 @@ reloads all calendars that use it.
    entity can be the holiday calendar (e.g. school holidays/public holidays integration):
    on every day it has an event, no lessons are shown.
 2. **Time grid** – add named periods (`1st lesson 08:00–08:45`, …), common to all days.
+   Reuse a grid with **Export time grid** (shows it as text, one `Name | HH:MM-HH:MM` line
+   per period) and **Import time grid** in another timetable (pick a timetable to copy from,
+   or paste the text). Importing replaces the grid and drops lessons whose periods vanish.
 3. **Subjects** – subject → teacher mapping.
 4. **Lessons** – subject + weekday + period, optional location and description, and
    **weeks**:
    * empty / `all` – every week
    * `odd` / `even` – parity of the ISO calendar week number
    * week numbers/ranges: `1-10, 15, 40-52` (a range like `45-5` wraps over new year)
-5. **Save & close** (changes are only stored on save).
+
+   A lesson can span several periods (double lesson): choose the first period and the
+   **last period**. It shows as **one** event from the start of the first to the end of the last.
+5. Every change is stored immediately; **Done** just closes the dialog.
 
 Removing a period or subject also removes the lessons that use it.
+
+## Entities per calendar
+
+Each calendar creates a device with:
+
+| Entity | Content |
+|---|---|
+| `calendar.<name>` | all lessons (state `on` during a lesson; next/current lesson as attributes) |
+| `sensor.<name>_today` | state = number of lessons today |
+| `sensor.<name>_tomorrow` | state = number of lessons tomorrow |
+
+The sensors have attributes `date`, `subjects` (unique, in time order), `first_start`,
+`last_end` and `lessons` (a list with `subject`, `teacher`, `location`, `description`,
+`timetable`, `start`, `end`). Holidays are respected, so on a holiday the sensors show 0.
+
+### Automation examples
+
+Morning announcement when a subject is on today's timetable:
+
+```yaml
+automation:
+  - alias: "Helena - bring PE bag"
+    trigger:
+      - platform: time
+        at: "07:00:00"
+    condition:
+      - condition: template
+        value_template: >
+          {{ 'Sport' in state_attr('sensor.helena_today', 'subjects') }}
+    action:
+      - service: tts.speak
+        target:
+          entity_id: tts.home_assistant_cloud
+        data:
+          media_player_entity_id: media_player.kitchen
+          message: "Helena, Sportbeutel nicht vergessen!"
+```
+
+Evening reminder for tomorrow: same, with `sensor.helena_tomorrow` and e.g. `at: "19:00:00"`.
+
+Alternatively react to the lesson itself with HA's calendar trigger (here 30 minutes
+before every lesson with the title `Sport`):
+
+```yaml
+trigger:
+  - platform: calendar
+    event: start
+    offset: "-0:30:0"
+    entity_id: calendar.helena
+condition:
+  - condition: template
+    value_template: "{{ trigger.calendar_event.summary == 'Sport' }}"
+```
 
 ## Use with the Timetable Card
 

@@ -49,7 +49,9 @@
           "remove_subject": "Remove subjects",
           "add_lesson": "Add lesson",
           "remove_lesson": "Remove lessons",
-          "save": "Save & close"
+          "save": "Done",
+          "export_periods": "Export time grid (copy as text)",
+          "import_periods": "Import time grid (from timetable or text)"
         },
         "data": {
           "timetables": "Timetables"
@@ -105,7 +107,8 @@
           "period": "Period",
           "location": "Location",
           "description": "Description",
-          "weeks": "Weeks"
+          "weeks": "Weeks",
+          "end_period": "Last period (for double lessons)"
         },
         "data_description": {
           "weeks": "Empty/'all', 'odd' or 'even' (ISO week number), or week numbers/ranges like '1-10, 15, 40-52'."
@@ -116,6 +119,21 @@
         "data": {
           "items": "Items"
         }
+      },
+      "export_periods": {
+        "title": "Export time grid",
+        "description": "Copy this text and paste it into 'Import time grid' of another timetable. Submitting changes nothing.",
+        "data": {
+          "periods": "Periods"
+        }
+      },
+      "import_periods": {
+        "title": "Import time grid",
+        "description": "Replaces this timetable's time grid. Lessons whose periods no longer exist are removed. Choose a timetable OR paste text with one 'Name | HH:MM-HH:MM' line per period.",
+        "data": {
+          "periods": "Periods",
+          "source": "Copy from timetable"
+        }
       }
     },
     "error": {
@@ -125,7 +143,10 @@
       "end_before_start_time": "End must be after start.",
       "invalid_weeks": "Invalid week specification.",
       "need_subjects_and_periods": "Add at least one period and one subject first (submit to go back).",
-      "nothing_to_remove": "Nothing to remove (submit to go back)."
+      "nothing_to_remove": "Nothing to remove (submit to go back).",
+      "invalid_periods": "Invalid time grid (expected lines like '1st lesson | 08:00-08:45'; unique names, end after start).",
+      "no_import_source": "Choose a timetable or paste text.",
+      "end_period_before_start": "The last period must come after the first period."
     }
   },
   "selector": {
@@ -138,6 +159,16 @@
         "4": "Friday",
         "5": "Saturday",
         "6": "Sunday"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today": {
+        "name": "Today"
+      },
+      "tomorrow": {
+        "name": "Tomorrow"
       }
     }
   }

@@ -69,3 +69,21 @@ def test_holiday_dates_from_events():
     )
     assert days == {date(2026, 10, 5), date(2026, 10, 6), date(2026, 10, 7),
                     date(2026, 12, 24), date(2026, 12, 25)}
+
+
+def test_multi_period_lesson_is_one_event():
+    opts = {**OPTS, "lessons": [{"subject": "Math", "weekday": 0, "period": "1", "end_period": "2"}]}
+    ev = schedule.build_events(schedule.Timetable.from_options("Anna", opts), date(2026, 9, 7), date(2026, 9, 7))
+    assert len(ev) == 1
+    assert (ev[0].start.hour, ev[0].start.minute) == (8, 0)
+    assert (ev[0].end.hour, ev[0].end.minute) == (9, 35)
+
+
+def test_periods_export_import_roundtrip():
+    text = schedule.format_periods(OPTS["periods"])
+    assert text == "1 | 08:00-08:45\n2 | 08:50-09:35"
+    assert schedule.parse_periods(text) == OPTS["periods"]
+    assert schedule.parse_periods("1. Stunde|8:00 - 8:45")[0]["start"] == "08:00"
+    for bad in ("", "x", "1 | 09:00-08:00", "a | 08:00-09:00\na | 09:00-10:00"):
+        with pytest.raises(ValueError):
+            schedule.parse_periods(bad)
