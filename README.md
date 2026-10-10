@@ -57,25 +57,32 @@ reloads all calendars that use it.
 
 ## Timetable setup (Configure on a timetable)
 
-1. **Date range & holiday calendar** – lessons only exist inside the range. Any HA calendar
-   entity can be the holiday calendar (e.g. school holidays/public holidays integration):
-   on every day it has an event, no lessons are shown.
-2. **Time grid** – add named periods (`1st lesson 08:00–08:45`, …), common to all days.
-   Reuse a grid with **Export time grid** (shows it as text, one `Name | HH:MM-HH:MM` line
-   per period) and **Import time grid** in another timetable (pick a timetable to copy from,
-   or paste the text). Importing replaces the grid and drops lessons whose periods vanish.
-3. **Subjects** – subject → teacher mapping.
-4. **Lessons** – subject + weekday + period, optional location and description, and
-   **weeks**:
-   * empty / `all` – every week
-   * `odd` / `even` – parity of the ISO calendar week number
-   * week numbers/ranges: `1-10, 15, 40-52` (a range like `45-5` wraps over new year)
+The configuration is a two-level menu: **Date range & holiday calendar**, **Periods**,
+**Subjects**, **Lessons** and **Done**. Each of Periods / Subjects / Lessons opens a sub menu
+that lists what is defined so far and offers *Add*, *Edit*, *Remove* and *Back*.
 
-   A lesson can span several periods (double lesson): choose the first period and the
-   **last period**. It shows as **one** event from the start of the first to the end of the last.
-5. Every change is stored immediately; **Done** just closes the dialog.
+* **Date range & holiday calendar** – lessons only exist inside the range. Any HA calendar
+  entity can be the holiday calendar (e.g. school holidays/public holidays integration):
+  on every day it has an event, no lessons are shown.
+* **Periods** (time grid, common to all days) – named slots such as `1st lesson 08:00–08:45`,
+  listed by start time. Renaming a period updates the lessons that use it. *Export time grid*
+  shows the grid as text (one `Name | HH:MM-HH:MM` line per period); *Import time grid* in
+  another timetable copies it (pick a timetable or paste the text). Importing replaces the
+  grid and drops lessons whose periods vanish.
+* **Subjects** – subject with its teacher, listed alphabetically. Renaming a subject updates
+  its lessons.
+* **Lessons** – subject + weekday + period, optional location and description, and **weeks**,
+  listed by weekday and start time:
+  * empty / `all` – every week
+  * `odd` / `even` – parity of the ISO calendar week number
+  * week numbers/ranges: `1-10, 15, 40-52` (a range like `45-5` wraps over new year)
 
-Removing a period or subject also removes the lessons that use it.
+  A lesson can span several periods (double lesson): choose the first period and the
+  **last period**. It shows as **one** event from the start of the first to the end of the last.
+  *Edit lesson* changes any field, e.g. moves a misentered lesson from Monday to Tuesday.
+
+Every change is stored immediately; **Done** just closes the dialog. Removing a period or
+subject also removes the lessons that use it.
 
 ## Entities per calendar
 
