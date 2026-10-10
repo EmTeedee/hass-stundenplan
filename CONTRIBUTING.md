@@ -21,4 +21,4 @@ template. A pull request without the ticked checkbox cannot be merged
 
 * Pure logic lives in `custom_components/stundenplan/schedule.py` and is covered by
   `python -m pytest tests`.
-* CI runs the tests, `hassfest` and the HACS validation on every pull request.
+* CI runs the tests, Hassfest and the HACS validation on every pull request.

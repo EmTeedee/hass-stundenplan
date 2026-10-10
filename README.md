@@ -1,5 +1,11 @@
 # Stundenplan – school timetables as Home Assistant calendars
 
+[![Tests](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/tests.yml/badge.svg)](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/tests.yml)
+[![Hassfest](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/hassfest.yml/badge.svg)](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/hassfest.yml)
+[![HACS validation](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/hacs.yml/badge.svg)](https://github.com/EmTeedee/hass-stundenplan/actions/workflows/hacs.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
+
 Custom integration (HACS-compatible). Requires a recent Home Assistant (2026.8 or newer).
 
 ## Installation
