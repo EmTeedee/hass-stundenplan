@@ -138,7 +138,7 @@ class StundenplanCalendar(CalendarEntity):
         return CalendarEvent(
             start=lesson.start.replace(tzinfo=tz),
             end=lesson.end.replace(tzinfo=tz),
-            summary=f"{lesson.subject} ({lesson.timetable})" if multiple else lesson.subject,
+            summary=lesson.subject,  # plain name keeps keyword rules (e.g. in Timetable Card) simple
             location=lesson.location or None,
             description="\n".join(lines) or None,
         )

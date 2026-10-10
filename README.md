@@ -49,7 +49,7 @@ For a holiday calendar, install any integration that provides one first (for exa
   optional holiday calendar. Creates no entity by itself.
 * **Calendar** – a named `calendar.*` entity that shows one **or more** timetables.
   A timetable can be used by any number of calendars (e.g. "Anna" = Anna's timetable,
-  "Family" = Anna's + Ben's; with several timetables events read `Math (Anna)`).
+  "Family" = Anna's + Ben's; with several timetables the timetable name is added to the event description).
 
 Add both via *Settings → Devices & services → Add integration → Stundenplan*.
 Edit with **Configure** (timetable: menu; calendar: choose timetables). Editing a timetable
@@ -70,6 +70,40 @@ reloads all calendars that use it.
 5. **Save & close** (changes are only stored on save).
 
 Removing a period or subject also removes the lessons that use it.
+
+## Use with the Timetable Card
+
+The calendars work well with [Timetable Card](https://github.com/KingDando8430/HA-Timetable-Card)
+(install it via HACS). Event title = subject, location = room, description = teacher
+(+ your description, and the timetable name if a calendar combines several timetables), so
+the card's `show_location`, `show_notes` and keyword rules work out of the box.
+
+Tip: create **one calendar per child** (plus an optional combined one) and give each its own
+colour in the card:
+
+```yaml
+type: custom:timetable-card
+title: Timetable
+entities:
+  - id: calendar.anna
+    color: "#03a9f4"
+  - id: calendar.ben
+    color: "#4CAF50"
+weekdays: [Mon, Tue, Wed, Thu, Fri]
+show_location: true
+show_notes: true
+time_range:
+  start: "07:45"
+  end: "16:00"
+keywords:
+  - keyword: Math
+    color: "#1f76f7"
+    exact_match: true
+    color_mode: border
+```
+
+Lessons are separate events per period, so the card's `event_based` time grid shows your
+school's real bell times.
 
 ## Notes
 
