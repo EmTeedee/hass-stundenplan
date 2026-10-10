@@ -169,6 +169,20 @@ school's real bell times.
 * Holiday events are treated as whole days, whatever their time.
 * Teacher and description go into the event description, location into the location field.
 
+## Testing a pull request through HACS
+
+HACS cannot install a PR or branch of this repo (it installs the `stundenplan.zip` of a
+release). Push a tag with a suffix on the PR branch instead:
+
+```
+git tag v0.0.3-rc1 <branch>
+git push origin v0.0.3-rc1
+```
+
+The release workflow publishes it as a **pre-release** (never "latest"). In HACS enable
+*Settings → Integrations → HACS → Configure → Show beta versions*, then open Stundenplan →
+**⋮ → Redownload**, pick the pre-release and restart Home Assistant.
+
 ## Tests
 
 `python -m pytest tests` (covers the pure logic in `schedule.py`).
