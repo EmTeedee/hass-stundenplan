@@ -56,6 +56,7 @@ from .const import (
 from .schedule import format_periods, parse_periods, parse_time, parse_weeks
 
 WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+WEEKDAY_LABELS_DE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 
 
 def _hhmm(value: str) -> str:
@@ -174,6 +175,11 @@ class CalendarOptionsFlow(OptionsFlow):
     """Change which timetables a calendar shows."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self.async_step_timetables()
+
+    async def async_step_timetables(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         current = self.config_entry.options.get(CONF_TIMETABLES, [])
         if user_input is not None:
@@ -183,7 +189,7 @@ class CalendarOptionsFlow(OptionsFlow):
                 return self.async_create_entry(data={CONF_TIMETABLES: user_input[CONF_TIMETABLES]})
         valid = {o["value"] for o in _timetable_options(self.hass)}
         return self.async_show_form(
-            step_id="init",
+            step_id="timetables",
             data_schema=_timetables_schema(self.hass, [t for t in current if t in valid]),
             errors=errors,
         )
@@ -200,29 +206,86 @@ class TimetableOptionsFlow(OptionsFlow):
     def opts(self) -> dict[str, Any]:
         if self._opts is None:
             self._opts = deepcopy(dict(self.config_entry.options))
+            self._sort_all(self._opts)
         return self._opts
 
+    @staticmethod
+    def _sort_all(opts: dict[str, Any]) -> None:
+        """Keep lists ordered: periods by start time, subjects by name, lessons by day and time."""
+        opts[CONF_PERIODS].sort(key=lambda p: (p[CONF_PERIOD_START], p[CONF_PERIOD_NAME]))
+        opts[CONF_SUBJECTS].sort(key=lambda s: s[CONF_SUBJECT_NAME].casefold())
+        starts = {p[CONF_PERIOD_NAME]: p[CONF_PERIOD_START] for p in opts[CONF_PERIODS]}
+        opts[CONF_LESSONS].sort(
+            key=lambda x: (
+                x[CONF_WEEKDAY],
+                starts.get(x[CONF_PERIOD], "99:99"),
+                x[CONF_SUBJECT].casefold(),
+            )
+        )
+
+    def _weekday_labels(self) -> list[str]:
+        if self.hass.config.language.startswith("de"):
+            return WEEKDAY_LABELS_DE
+        return WEEKDAY_LABELS
+
+    # -- menus: top level and one sub menu per topic ----------------------
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         return self.async_show_menu(
-            step_id="init",
+            step_id="init", menu_options=["settings", "periods", "subjects", "lessons", "save"]
+        )
+
+    async def async_step_periods(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return self.async_show_menu(
+            step_id="periods",
             menu_options=[
-                "settings",
                 "add_period",
+                "edit_period",
                 "remove_period",
                 "export_periods",
                 "import_periods",
-                "add_subject",
-                "edit_subject",
-                "remove_subject",
-                "add_lesson",
-                "edit_lesson",
-                "remove_lesson",
-                "save",
+                "back",
             ],
+            description_placeholders={"overview": self._overview(self._period_lines())},
         )
+
+    async def async_step_subjects(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return self.async_show_menu(
+            step_id="subjects",
+            menu_options=["add_subject", "edit_subject", "remove_subject", "back"],
+            description_placeholders={"overview": self._overview(self._subject_lines())},
+        )
+
+    async def async_step_lessons(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return self.async_show_menu(
+            step_id="lessons",
+            menu_options=["add_lesson", "edit_lesson", "remove_lesson", "back"],
+            description_placeholders={
+                "overview": self._overview([o["label"] for o in self._lesson_options()])
+            },
+        )
+
+    async def async_step_back(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        return await self.async_step_init()
+
+    @staticmethod
+    def _overview(lines: list[str]) -> str:
+        return "\n".join(f"- {line}" for line in lines) if lines else "-"
+
+    def _period_lines(self) -> list[str]:
+        return [
+            f"{p[CONF_PERIOD_NAME]}: {p[CONF_PERIOD_START]}-{p[CONF_PERIOD_END]}"
+            for p in self.opts[CONF_PERIODS]
+        ]
+
+    def _subject_lines(self) -> list[str]:
+        return [
+            f"{s[CONF_SUBJECT_NAME]} ({s[CONF_TEACHER]})" if s.get(CONF_TEACHER) else s[CONF_SUBJECT_NAME]
+            for s in self.opts[CONF_SUBJECTS]
+        ]
 
     def _commit(self) -> None:
         """Store the current state right away (closing the dialog loses nothing)."""
+        self._sort_all(self.opts)
         self.hass.config_entries.async_update_entry(
             self.config_entry, options=deepcopy(self.opts)
         )
@@ -264,28 +327,71 @@ class TimetableOptionsFlow(OptionsFlow):
     async def async_step_add_period(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        self._edit_idx = None
+        return await self._period_form("add_period", user_input)
+
+    async def async_step_edit_period(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            if "item" not in user_input:
+                return await self.async_step_periods()
+            self._edit_idx = int(user_input["item"])
+            return await self.async_step_edit_period_form()
+        options = [
+            SelectOptionDict(value=str(i), label=line) for i, line in enumerate(self._period_lines())
+        ]
+        return self._show_pick("edit_period", options)
+
+    async def async_step_edit_period_form(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self._period_form("edit_period_form", user_input)
+
+    async def _period_form(
+        self, step_id: str, user_input: dict[str, Any] | None
+    ) -> ConfigFlowResult:
+        """Add a period, or edit the one at self._edit_idx (renames follow into lessons)."""
+        idx = self._edit_idx
+        periods = self.opts[CONF_PERIODS]
+        current = periods[idx] if idx is not None else {}
         errors: dict[str, str] = {}
         if user_input is not None:
             name = user_input[CONF_PERIOD_NAME].strip()
             start, end = _hhmm(user_input[CONF_PERIOD_START]), _hhmm(user_input[CONF_PERIOD_END])
-            if any(p[CONF_PERIOD_NAME] == name for p in self.opts[CONF_PERIODS]):
+            if any(p[CONF_PERIOD_NAME] == name for i, p in enumerate(periods) if i != idx):
                 errors["base"] = "duplicate_name"
             elif parse_time(end) <= parse_time(start):
                 errors["base"] = "end_before_start_time"
             else:
-                self.opts[CONF_PERIODS].append(
-                    {CONF_PERIOD_NAME: name, CONF_PERIOD_START: start, CONF_PERIOD_END: end}
-                )
-                self.opts[CONF_PERIODS].sort(key=lambda p: p[CONF_PERIOD_START])
+                new = {CONF_PERIOD_NAME: name, CONF_PERIOD_START: start, CONF_PERIOD_END: end}
+                if idx is None:
+                    periods.append(new)
+                else:
+                    old_name = periods[idx][CONF_PERIOD_NAME]
+                    periods[idx] = new
+                    for lesson in self.opts[CONF_LESSONS]:
+                        if lesson[CONF_PERIOD] == old_name:
+                            lesson[CONF_PERIOD] = name
+                        if lesson.get(CONF_END_PERIOD) == old_name:
+                            lesson[CONF_END_PERIOD] = name
+                periods.sort(key=lambda p: p[CONF_PERIOD_START])
                 self._commit()
-                return await self.async_step_init()
+                self._edit_idx = None
+                return await self.async_step_periods()
+
+        def _time_default(key: str) -> Any:
+            return f"{current[key]}:00" if key in current else vol.UNDEFINED
+
         return self.async_show_form(
-            step_id="add_period",
+            step_id=step_id,
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_PERIOD_NAME): _text(),
-                    vol.Required(CONF_PERIOD_START): TimeSelector(),
-                    vol.Required(CONF_PERIOD_END): TimeSelector(),
+                    vol.Required(
+                        CONF_PERIOD_NAME, default=current.get(CONF_PERIOD_NAME, vol.UNDEFINED)
+                    ): _text(),
+                    vol.Required(CONF_PERIOD_START, default=_time_default(CONF_PERIOD_START)): TimeSelector(),
+                    vol.Required(CONF_PERIOD_END, default=_time_default(CONF_PERIOD_END)): TimeSelector(),
                 }
             ),
             errors=errors,
@@ -306,13 +412,10 @@ class TimetableOptionsFlow(OptionsFlow):
                 if item[CONF_PERIOD] not in gone and item.get(CONF_END_PERIOD) not in gone
             ]
             self._commit()
-            return await self.async_step_init()
+            return await self.async_step_periods()
         options = [
-            SelectOptionDict(
-                value=p[CONF_PERIOD_NAME],
-                label=f"{p[CONF_PERIOD_NAME]} ({p[CONF_PERIOD_START]}-{p[CONF_PERIOD_END]})",
-            )
-            for p in self.opts[CONF_PERIODS]
+            SelectOptionDict(value=p[CONF_PERIOD_NAME], label=line)
+            for p, line in zip(self.opts[CONF_PERIODS], self._period_lines())
         ]
         return self._show_remove("remove_period", options)
 
@@ -328,7 +431,7 @@ class TimetableOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         if user_input is not None:
             if "item" not in user_input:
-                return await self.async_step_init()
+                return await self.async_step_subjects()
             self._edit_idx = int(user_input["item"])
             return await self.async_step_edit_subject_form()
         options = [
@@ -370,7 +473,7 @@ class TimetableOptionsFlow(OptionsFlow):
                             lesson[CONF_SUBJECT] = name
                 self._commit()
                 self._edit_idx = None
-                return await self.async_step_init()
+                return await self.async_step_subjects()
         return self.async_show_form(
             step_id=step_id,
             data_schema=vol.Schema(
@@ -398,7 +501,7 @@ class TimetableOptionsFlow(OptionsFlow):
                 item for item in self.opts[CONF_LESSONS] if item[CONF_SUBJECT] not in gone
             ]
             self._commit()
-            return await self.async_step_init()
+            return await self.async_step_subjects()
         options = [
             SelectOptionDict(
                 value=s[CONF_SUBJECT_NAME],
@@ -420,7 +523,7 @@ class TimetableOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         if user_input is not None:
             if "item" not in user_input:
-                return await self.async_step_init()
+                return await self.async_step_lessons()
             self._edit_idx = int(user_input["item"])
             return await self.async_step_edit_lesson_form()
         return self._show_pick("edit_lesson", self._lesson_options())
@@ -436,7 +539,7 @@ class TimetableOptionsFlow(OptionsFlow):
         """Add a lesson, or edit the one at self._edit_idx."""
         if not self.opts[CONF_SUBJECTS] or not self.opts[CONF_PERIODS]:
             if user_input is not None:
-                return await self.async_step_init()
+                return await self.async_step_lessons()
             return self.async_show_form(
                 step_id=step_id,
                 data_schema=vol.Schema({}),
@@ -472,7 +575,7 @@ class TimetableOptionsFlow(OptionsFlow):
                     lessons[idx] = lesson
                 self._commit()
                 self._edit_idx = None
-                return await self.async_step_init()
+                return await self.async_step_lessons()
         period_options = [
             SelectOptionDict(
                 value=p[CONF_PERIOD_NAME],
@@ -526,15 +629,13 @@ class TimetableOptionsFlow(OptionsFlow):
             SelectOptionDict(
                 value=str(i),
                 label=(
-                    f"{WEEKDAY_LABELS[x[CONF_WEEKDAY]]} {x[CONF_PERIOD]}"
+                    f"{self._weekday_labels()[x[CONF_WEEKDAY]]} {x[CONF_PERIOD]}"
                     + (f"-{x[CONF_END_PERIOD]}" if x.get(CONF_END_PERIOD) else "")
                     + f": {x[CONF_SUBJECT]}"
                     + (f" [{x[CONF_WEEKS]}]" if x.get(CONF_WEEKS, "all") != "all" else "")
                 ),
             )
-            for i, x in sorted(
-                enumerate(lessons), key=lambda t: (t[1][CONF_WEEKDAY], t[1][CONF_PERIOD])
-            )
+            for i, x in enumerate(lessons)  # stored sorted by weekday and start time
         ]
 
     async def async_step_remove_lesson(
@@ -545,7 +646,7 @@ class TimetableOptionsFlow(OptionsFlow):
             gone = {int(i) for i in user_input.get("items", [])}
             self.opts[CONF_LESSONS] = [x for i, x in enumerate(lessons) if i not in gone]
             self._commit()
-            return await self.async_step_init()
+            return await self.async_step_lessons()
         return self._show_remove("remove_lesson", self._lesson_options())
 
     # -- export / import the time grid ------------------------------------
@@ -554,7 +655,7 @@ class TimetableOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         """Show the time grid as text to copy into other timetables."""
         if user_input is not None:
-            return await self.async_step_init()
+            return await self.async_step_periods()
         return self.async_show_form(
             step_id="export_periods",
             data_schema=vol.Schema(
@@ -598,7 +699,7 @@ class TimetableOptionsFlow(OptionsFlow):
                     and (not x.get(CONF_END_PERIOD) or x[CONF_END_PERIOD] in names)
                 ]
                 self._commit()
-                return await self.async_step_init()
+                return await self.async_step_periods()
         schema: dict[Any, Any] = {}
         if others:
             schema[vol.Optional("source")] = _select(others)
