@@ -84,6 +84,7 @@ class Lesson:
     location: str = ""
     description: str = ""
     weeks: str = "all"
+    end_period: str = ""  # last period of a multi-period lesson ("" = single period)
 
 
 @dataclass(frozen=True)
@@ -127,6 +128,7 @@ class Timetable:
                 location=item.get("location", ""),
                 description=item.get("description", ""),
                 weeks=item.get("weeks", "all"),
+                end_period=item.get("end_period", ""),
             )
             for item in opts.get("lessons", [])
         ]
@@ -163,6 +165,9 @@ def build_events(
                 period = timetable.periods.get(lesson.period)
                 if period is None or not week_matches(lesson.weeks, iso_week):
                     continue
+                last_period = timetable.periods.get(lesson.end_period) or period
+                if last_period.end <= period.start:
+                    last_period = period
                 events.append(
                     LessonEvent(
                         subject=lesson.subject,
@@ -170,7 +175,7 @@ def build_events(
                         period=period.name,
                         timetable=timetable.name,
                         start=datetime.combine(day, period.start),
-                        end=datetime.combine(day, period.end),
+                        end=datetime.combine(day, last_period.end),
                         location=lesson.location,
                         description=lesson.description,
                     )
@@ -205,3 +210,36 @@ def holiday_dates_from_events(events: Iterable[dict[str, Any]]) -> set[date]:
             days.add(day)
             day += timedelta(days=1)
     return days
+
+
+_PERIOD_LINE_RE = re.compile(r"^(.+?)\s*\|\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$")
+
+
+def format_periods(periods: Iterable[dict[str, Any]]) -> str:
+    """Time grid as text, one ``Name | HH:MM-HH:MM`` line per period."""
+    return "\n".join(f"{p['name']} | {p['start']}-{p['end']}" for p in periods)
+
+
+def parse_periods(text: str) -> list[dict[str, str]]:
+    """Parse the text produced by :func:`format_periods`.
+
+    Raises ValueError for malformed lines, duplicate names or end <= start.
+    """
+    periods: list[dict[str, str]] = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        match = _PERIOD_LINE_RE.match(line.strip())
+        if not match:
+            raise ValueError(f"Invalid line: {line.strip()!r}")
+        name, start, end = match.group(1).strip(), match.group(2), match.group(3)
+        start, end = f"{int(start[:-3]):02d}:{start[-2:]}", f"{int(end[:-3]):02d}:{end[-2:]}"
+        if parse_time(end) <= parse_time(start):
+            raise ValueError(f"End before start: {line.strip()!r}")
+        if any(p["name"] == name for p in periods):
+            raise ValueError(f"Duplicate period: {name!r}")
+        periods.append({"name": name, "start": start, "end": end})
+    if not periods:
+        raise ValueError("No periods")
+    periods.sort(key=lambda p: p["start"])
+    return periods
