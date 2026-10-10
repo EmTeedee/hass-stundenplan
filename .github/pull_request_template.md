@@ -2,6 +2,5 @@
 
 <!-- short description -->
 
-## Contributor agreement
-
-- [ ] I agree that my contribution is licensed under the MIT License and that I have the right to submit it (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
+New contributors: the CLA bot will ask you to sign the contributor agreement once with a
+comment on your first pull request (see [CONTRIBUTING.md](../CONTRIBUTING.md)).

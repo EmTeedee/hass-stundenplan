@@ -176,5 +176,5 @@ The HA parts (config flow, calendar entity) have not been run against a live Hom
 
 ## License & contributing
 
-MIT licensed, see [LICENSE](LICENSE). Pull requests must confirm the MIT contributor
-agreement, see [CONTRIBUTING.md](CONTRIBUTING.md).
+MIT licensed, see [LICENSE](LICENSE). Contributors sign the MIT contributor agreement once
+(a comment on their first pull request), see [CONTRIBUTING.md](CONTRIBUTING.md).
