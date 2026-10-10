@@ -137,6 +137,17 @@ condition:
     value_template: "{{ trigger.calendar_event.summary == 'Sport' }}"
 ```
 
+## Blueprint: calendar reminder
+
+`blueprints/automation/stundenplan/calendar_reminder.yaml` is an automation blueprint that
+works with **any** calendar entity (these calendars, WebUntis, iCal, ...). Copy it to
+`<config>/blueprints/automation/stundenplan/` (HACS does not install blueprints).
+
+It looks at today or tomorrow, and for each rule (`calendar`, `match` regex, `text`) that
+finds a matching event it adds an entry to a list. The entries are joined into a message
+(`Einpacken: {items}`) and your actions run, e.g. a phone notification and a TTS
+announcement using `{{ message }}`. If no rule matches, nothing happens.
+
 ## Use with the Timetable Card
 
 The calendars work well with [Timetable Card](https://github.com/KingDando8430/HA-Timetable-Card)
@@ -176,24 +187,9 @@ school's real bell times.
 * Holiday events are treated as whole days, whatever their time.
 * Teacher and description go into the event description, location into the location field.
 
-## Testing a pull request through HACS
-
-HACS cannot install a PR or branch of this repo (it installs the `stundenplan.zip` of a
-release). Push a tag with a suffix on the PR branch instead:
-
-```
-git tag v0.0.3-rc1 <branch>
-git push origin v0.0.3-rc1
-```
-
-The release workflow publishes it as a **pre-release** (never "latest"). In HACS enable
-*Settings → Integrations → HACS → Configure → Show beta versions*, then open Stundenplan →
-**⋮ → Redownload**, pick the pre-release and restart Home Assistant.
-
 ## Tests
 
 `python -m pytest tests` (covers the pure logic in `schedule.py`).
-The HA parts (config flow, calendar entity) have not been run against a live Home Assistant yet.
 
 ## License & contributing
 
