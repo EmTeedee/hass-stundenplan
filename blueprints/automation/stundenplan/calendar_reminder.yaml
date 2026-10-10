@@ -1,0 +1,133 @@
+blueprint:
+  name: Calendar reminder (e.g. "pack the PE bag")
+  description: >
+    Looks at one or more calendars for **today** or **tomorrow**. Every rule that finds a
+    matching event adds one entry to a list; the entries are put into a message and your
+    actions run (notification, TTS, ...). If no rule matches, nothing happens.
+
+
+    **Rules** (YAML list, one entry per thing to look for):
+
+    ```yaml
+
+    - calendar: calendar.ben          # calendar entity to search
+      match: "sport"                  # regex on the event title (case-insensitive)
+      text: "Sportbeutel für Ben"     # list entry; may use {summary} and {calendar}
+    - calendar: calendar.amy
+      match: "^(sport|sp)$"
+      text: "Sportbeutel für Amy"
+    ```
+
+
+    In **your actions** the variables `message` (final text) and `item_list` (list of the
+    entries) are available, e.g. `message: "{{ message }}"`.
+  domain: automation
+  input:
+    trigger_time:
+      name: Time
+      description: When the automation runs.
+      default: "07:00:00"
+      selector:
+        time:
+    weekdays:
+      name: Weekdays
+      description: Only run on these days (day of the trigger, not of the looked-at day).
+      default: [mon, tue, wed, thu, fri]
+      selector:
+        select:
+          multiple: true
+          options:
+            - { label: Monday, value: mon }
+            - { label: Tuesday, value: tue }
+            - { label: Wednesday, value: wed }
+            - { label: Thursday, value: thu }
+            - { label: Friday, value: fri }
+            - { label: Saturday, value: sat }
+            - { label: Sunday, value: sun }
+    day:
+      name: Day to look at
+      default: today
+      selector:
+        select:
+          options:
+            - { label: Today, value: today }
+            - { label: Tomorrow, value: tomorrow }
+    rules:
+      name: Rules
+      description: >
+        YAML list of `calendar`, `match` (regex, case-insensitive) and `text` (entry added
+        to the list; `{summary}` = title of the first matching event, `{calendar}` = calendar
+        name). Each rule adds at most one entry; identical entries are merged.
+      default:
+        - calendar: calendar.example
+          match: sport
+          text: "Sportbeutel für Example"
+      selector:
+        object:
+    message_format:
+      name: Message format
+      description: Final message. `{items}` = joined entries, `{count}` = number of entries.
+      default: "Einpacken: {items}"
+      selector:
+        text:
+    separator:
+      name: Separator
+      description: Placed between the entries in `{items}`.
+      default: ", "
+      selector:
+        text:
+    actions:
+      name: Actions
+      description: >
+        What to do when there is something to report. Use `{{ message }}` and
+        `{{ item_list }}` in the actions.
+      default: []
+      selector:
+        action:
+
+mode: single
+max_exceeded: silent
+
+trigger:
+  - platform: time
+    at: !input trigger_time
+
+condition:
+  - condition: time
+    weekday: !input weekdays
+
+variables:
+  day: !input day
+  day_offset: "{{ 1 if day == 'tomorrow' else 0 }}"
+  rules: !input rules
+  message_format: !input message_format
+  separator: !input separator
+
+action:
+  - action: calendar.get_events
+    target:
+      entity_id: "{{ rules | map(attribute='calendar') | unique | list }}"
+    data:
+      start_date_time: "{{ today_at() + timedelta(days=day_offset) }}"
+      end_date_time: "{{ today_at() + timedelta(days=day_offset + 1) }}"
+    response_variable: cal
+  - variables:
+      item_list: >
+        {% set ns = namespace(l=[]) %}
+        {% for r in rules %}
+          {% set evs = (cal[r.calendar].events if r.calendar in cal else [])
+                       | selectattr('summary', 'search', r.match, true) | list %}
+          {% if evs %}
+            {% set name = state_attr(r.calendar, 'friendly_name') or r.calendar %}
+            {% set ns.l = ns.l + [r.text | replace('{summary}', evs[0].summary)
+                                         | replace('{calendar}', name)] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.l | unique | list }}
+      message: >
+        {{ message_format | replace('{items}', item_list | join(separator))
+                         | replace('{count}', item_list | count | string) }}
+  - condition: template
+    value_template: "{{ item_list | count > 0 }}"
+  - choose: []
+    default: !input actions
