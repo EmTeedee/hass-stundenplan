@@ -4,8 +4,8 @@ Thanks for helping! Pull requests are welcome.
 
 ## Contributor agreement (MIT)
 
-This project is released under the [MIT License](LICENSE). By submitting a pull
-request you agree that:
+This project is released under the [MIT License](LICENSE). By signing this agreement you
+confirm for all your contributions to this project that:
 
 1. You wrote the contribution yourself, or you have the right to submit it.
 2. Your contribution is licensed to the project and to everyone who receives it
@@ -13,9 +13,14 @@ request you agree that:
    the right to release it under the MIT License.
 3. You keep the copyright to your contribution.
 
-You confirm this by ticking the agreement checkbox in the pull request
-template. A pull request without the ticked checkbox cannot be merged
-(enforced by the `Contributor agreement` check).
+**You sign once per author, not per pull request.** On your first pull request the CLA bot
+comments with instructions: reply with exactly
+
+> I have read the CLA Document and I hereby sign the CLA
+
+Your GitHub username is then recorded in the `cla-signatures` branch (`signatures/cla.json`)
+and all your later pull requests pass the `CLAAssistant` check automatically. Comment
+`recheck` to re-run the check. The maintainer and bots (Dependabot) are exempt.
 
 ## Development
 
