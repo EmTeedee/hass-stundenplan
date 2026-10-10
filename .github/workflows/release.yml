@@ -1,6 +1,6 @@
 name: Release
 
-# Runs only when a version tag such as v0.1.0 is pushed (no release exists yet).
+# Runs when a version tag is pushed: v0.0.3 = release, v0.0.3-rc1 = pre-release.
 on:
   push:
     tags: ["v*"]
@@ -36,5 +36,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Tags with a suffix (v0.0.3-rc1, v0.1.0-beta.1) are pre-releases: HACS only
+          # offers them when "Show beta versions" is enabled, and they never become "latest".
+          flags=""
+          case "$GITHUB_REF_NAME" in
+            *-*) flags="--prerelease --latest=false" ;;
+          esac
           gh release create "$GITHUB_REF_NAME" stundenplan.zip \
-            --title "$GITHUB_REF_NAME" --generate-notes
+            --title "$GITHUB_REF_NAME" --generate-notes $flags
