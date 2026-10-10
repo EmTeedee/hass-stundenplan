@@ -39,12 +39,15 @@ async def async_setup_entry(
             continue
         sources.append((timetable, tt_entry.options.get(CONF_HOLIDAY_CALENDAR)))
         # Reload this calendar whenever one of its timetables is edited.
-        entry.async_on_unload(
-            tt_entry.add_update_listener(
-                lambda hass, _entry: hass.config_entries.async_schedule_reload(entry.entry_id)
-            )
-        )
-    async_add_entities([StundenplanCalendar(entry, sources)])
+        entry.async_on_unload(tt_entry.add_update_listener(_reload_calendar(entry.entry_id)))
+    async_add_entities([StundenplanCalendar(entry, sources)], update_before_add=True)
+
+
+def _reload_calendar(calendar_entry_id: str):
+    async def _listener(hass: HomeAssistant, _timetable_entry: ConfigEntry) -> None:
+        hass.config_entries.async_schedule_reload(calendar_entry_id)
+
+    return _listener
 
 
 class StundenplanCalendar(CalendarEntity):
